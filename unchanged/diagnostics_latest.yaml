@@ -678,6 +678,12 @@ DOCr_remin :
    vertical_grid : layer_avg
    frequency : low
    operator : average
+DOCr_sed_remin :
+   longname : DOCr vent Remineralization
+   units : mmol/m^3/s
+   vertical_grid : layer_avg
+   frequency : low
+   operator : average
 DON_prod :
    longname : DON Production
    units : mmol/m^3/s
@@ -774,10 +780,15 @@ FESEDFLUX :
    vertical_grid : layer_avg
    frequency : never
    operator : average
-
 DOCVENTFLUX :
    longname : DOC Vent Flux
    units : mmol DOC/m^3/s
+   vertical_grid : layer_avg
+   frequency : never
+   operator : average
+DOCFLUIDY :
+   longname : DOC fluid Flux
+   units : 1/s
    vertical_grid : layer_avg
    frequency : never
    operator : average
