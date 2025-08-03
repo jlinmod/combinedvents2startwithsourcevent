@@ -1,0 +1,34 @@
+cp -R my_cesm_sandbox_invent_DOCr /mnt/lustre/letscher/jsl1063/my_cesm_sandbox_hydrothermal2
+
+/mnt/lustre/letscher/jsl1063/my_cesm_sandbox_hydrothermal2
+
+1)	build-namelist
+  cd /mnt/lustre/letscher/jsl1063/my_cesm_sandbox_hydrothermal2/components/pop/bld
+
+2)	namelist_defaults_pop.xml
+3)	namelist_definition_pop.xml
+  cd /mnt/lustre/letscher/jsl1063/my_cesm_sandbox_hydrothermal2/components/pop/bld/namelist_files
+  
+4)	ecosys_forcing_mod.F90
+  cd /mnt/lustre/letscher/jsl1063/my_cesm_sandbox_hydrothermal2/components/pop/source
+  
+5)	diagnostics_latest.yaml
+  cd /mnt/lustre/letscher/jsl1063/my_cesm_sandbox_hydrothermal2/components/pop/externals/MARBL/defaults
+./yaml_to_json *
+  
+6)	mabl_diagnostics_mod.F90
+7)	marbl_interior_tendency_mod.F90
+8)	marbl_interface_private_types.F90
+9)	marbl_init_mod.F90
+10) marbl_settings_mod.F90
+  cd /mnt/lustre/letscher/jsl1063/my_cesm_sandbox_hydrothermal2/components/pop/externals/MARBL/src
+
+10)	user_nl_pop_ventdoc_combind.x3Feinputs
+	cd /mnt/lustre/letscher/shared/SourceCode_gx3v7
+
+ compare code with my_cesm_sandbox_vents
+
+
+
+
+
