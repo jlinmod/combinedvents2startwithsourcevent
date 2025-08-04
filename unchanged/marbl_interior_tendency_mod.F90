@@ -188,6 +188,7 @@ contains
     real (r8) :: Lig_loss(domain%km)         ! loss of Fe-binding Ligand
     real (r8) :: totalChl_local(domain%km)   ! local value of totalChl
     real (r8) :: docventflux(domain%km)   ! local value of docvent
+    real (r8) :: docfluidy(domain%km)        ! local value of docfluidy
 
     ! NOTE(bja, 2015-07) vectorization: arrays that are (n, k, c, i)
     ! probably can not be vectorized reasonably over c without memory
@@ -232,6 +233,10 @@ contains
          salinity            => interior_tendency_forcings(interior_tendency_forcing_indices%salinity_id)%field_1d(1,:), &
          fesedflux           => interior_tendency_forcings(interior_tendency_forcing_indices%fesedflux_id)%field_1d(1,:),&
          docventflux           => interior_tendency_forcings(interior_tendency_forcing_indices%docventflux_id)%field_1d(1,:),&
+         docfluidy           => interior_tendency_forcings(interior_tendency_forcing_indices%docfluidy_id)%field_1d(1,:),&
+
+         DOCr_sed_remin         => dissolved_organic_matter%DOCr_sed_remin(:),    & ! INPUT DOCr_sed_remin rate (mmol C/m^3/sec)
+
 
          po4_ind           => marbl_tracer_indices%po4_ind,         &
          no3_ind           => marbl_tracer_indices%no3_ind,         &
@@ -343,7 +348,7 @@ contains
 
     call compute_dissolved_organic_matter (km, marbl_tracer_indices, num_PAR_subcols, &
          PAR, zooplankton_derived_terms, autotroph_derived_terms,   &
-         delta_z1, tracer_local(:, :), dissolved_organic_matter)
+         delta_z1, tracer_local(:, :), dissolved_organic_matter, docfluidy)
 
     do k = 1, km
 
@@ -406,7 +411,7 @@ contains
          tracer_local(:,:), &
          o2_consumption_scalef(:), &
          o2_production(:), o2_consumption(:), &
-         interior_tendencies(:,:), docventflux)
+         interior_tendencies(:,:), docventflux, docfluidy)
 
     ! Compute interior diagnostics
     call marbl_diagnostics_interior_tendency_compute(       &
@@ -2015,7 +2020,7 @@ contains
   subroutine compute_dissolved_organic_matter (km, marbl_tracer_indices, &
              PAR_nsubcols, PAR, &
              zooplankton_derived_terms, autotroph_derived_terms, &
-             dz1, tracer_local, dissolved_organic_matter)
+             dz1, tracer_local, dissolved_organic_matter, docfluidy)
 
     use marbl_settings_mod, only : Q
     use marbl_settings_mod, only : DOC_reminR_light
@@ -2038,6 +2043,7 @@ contains
     real(r8),                             intent(in)    :: dz1
     real(r8),                             intent(in)    :: tracer_local(marbl_tracer_indices%total_cnt,km)
     type(dissolved_organic_matter_type),  intent(inout) :: dissolved_organic_matter
+    real(r8),                             intent(in)    :: docfluidy(km)
 
     !-----------------------------------------------------------------------
     !  local variables
@@ -2048,6 +2054,7 @@ contains
     real(r8) :: DON_reminR        ! remineralization rate (1/sec)
     real(r8) :: DOP_reminR        ! remineralization rate (1/sec)
     real(r8) :: DOCr_reminR       ! remineralization rate (1/sec)
+    real(r8) :: DOCr_sed_remin       ! remineralization rate (1/sec)
     real(r8) :: DONr_reminR       ! remineralization rate (1/sec)
     real(r8) :: DOPr_reminR       ! remineralization rate (1/sec)
     !-----------------------------------------------------------------------
@@ -2074,6 +2081,7 @@ contains
          DOC_prod        => dissolved_organic_matter%DOC_prod(:),   & ! output production of DOC (mmol C/m^3/sec)
          DOC_remin       => dissolved_organic_matter%DOC_remin(:),  & ! output remineralization of DOC (mmol C/m^3/sec)
          DOCr_remin      => dissolved_organic_matter%DOCr_remin(:), & ! output remineralization of DOCr
+         DOCr_sed_remin      => dissolved_organic_matter%DOCr_sed_remin(:), & ! output remineralization of DOCr_vent
          DON_prod        => dissolved_organic_matter%DON_prod(:),   & ! output production of DON
          DON_remin       => dissolved_organic_matter%DON_remin(:),  & ! output remineralization of DON
          DONr_remin      => dissolved_organic_matter%DONr_remin(:), & ! output remineralization of DONr
@@ -2140,6 +2148,7 @@ contains
         DOCr_remin(k) = DOCr_loc(k) * DOCr_reminR
         DONr_remin(k) = DONr_loc(k) * DONr_reminR
         DOPr_remin(k) = DOPr_loc(k) * DOPr_reminR
+        DOCr_sed_remin(k) = DOCr_loc(k) * docfluidy(k)
 
       end do
 
@@ -3352,7 +3361,7 @@ contains
        zooplankton_derived_terms, dissolved_organic_matter, nitrif, denitrif, sed_denitrif, &
        Fe_scavenge, Lig_prod, Lig_loss, P_iron_remin, POC_remin, POP_remin, P_SiO2_remin, &
        P_CaCO3_remin, P_CaCO3_ALT_CO2_remin, other_remin, PON_remin, tracer_local, &
-       o2_consumption_scalef, o2_production, o2_consumption, interior_tendencies, docventflux)
+       o2_consumption_scalef, o2_production, o2_consumption, interior_tendencies, docventflux, docfluidy)
 
     integer,                              intent(in)    :: km
     type(marbl_tracer_index_type),        intent(in)    :: marbl_tracer_indices
@@ -3379,6 +3388,7 @@ contains
     real(r8),                             intent(out)   :: o2_consumption(km)
     real(r8),                             intent(inout) :: interior_tendencies(marbl_tracer_indices%total_cnt, km)
     real(r8),                             intent(in)    :: docventflux(km)
+    real(r8),                             intent(in)    :: docfluidy (km) !1/yr -> 1/s for fluid flux into hydrothermal crust
 
     !-----------------------------------------------------------------------
     !  local variables
@@ -3426,6 +3436,7 @@ contains
          DOC_prod        => dissolved_organic_matter%DOC_prod(:),       & ! production of DOC (mmol C/m^3/sec)
          DOC_remin       => dissolved_organic_matter%DOC_remin(:),      & ! remineralization of DOC (mmol C/m^3/sec)
          DOCr_remin      => dissolved_organic_matter%DOCr_remin(:),     & ! remineralization of DOCr
+         DOCr_sed_remin      => dissolved_organic_matter%DOCr_sed_remin(:),     & ! remineralization of DOCr
          DON_prod        => dissolved_organic_matter%DON_prod(:),       & ! production of DON
          DON_remin       => dissolved_organic_matter%DON_remin(:),      & ! remineralization of DON
          DONr_remin      => dissolved_organic_matter%DONr_remin(:),     & ! remineralization of DONr
@@ -3568,7 +3579,7 @@ contains
 
         interior_tendencies(doc_ind,k) = DOC_prod(k) * (c1 - DOCprod_refract) - DOC_remin(k) + docventflux(k)*0.9_r8
 
-        interior_tendencies(docr_ind,k) = DOC_prod(k) * DOCprod_refract - DOCr_remin(k) + (POC_remin(k) * POCremin_refract) + docventflux(k)*0.1_r8
+        interior_tendencies(docr_ind,k) = DOC_prod(k) * DOCprod_refract - DOCr_remin(k) + (POC_remin(k) * POCremin_refract) + docventflux(k)*0.1_r8 - DOCr_sed_remin(k)
 
         interior_tendencies(don_ind,k) = (DON_prod(k) * (c1 - DONprod_refract)) - DON_remin(k)
 
