@@ -1774,6 +1774,18 @@ contains
         return
       end if
 
+      lname = 'DOCr vent Remineralization'
+      sname = 'DOCr_sed_remin'
+      units = 'mmol/m^3/s'
+      vgrid = 'layer_avg'
+      truncate = .false.
+      call diags%add_diagnostic(lname, sname, units, vgrid, truncate,     &
+           ind%DOCr_sed_remin, marbl_status_log)
+      if (marbl_status_log%labort_marbl) then
+        call marbl_logging_add_diagnostics_error(marbl_status_log, sname, subname)
+        return
+      end if
+
       lname = 'DON Production'
       sname = 'DON_prod'
       units = 'mmol/m^3/s'
@@ -1973,6 +1985,18 @@ contains
       truncate = .false.
       call diags%add_diagnostic(lname, sname, units, vgrid, truncate,     &
            ind%docventflux, marbl_status_log)
+      if (marbl_status_log%labort_marbl) then
+        call marbl_logging_add_diagnostics_error(marbl_status_log, sname, subname)
+        return
+      end if
+
+      lname = 'DOC fluid Flux'
+      sname = 'DOCFLUIDY'
+      units = '1/s'
+      vgrid = 'layer_avg'
+      truncate = .false.
+      call diags%add_diagnostic(lname, sname, units, vgrid, truncate,     &
+           ind%docfluidy, marbl_status_log)
       if (marbl_status_log%labort_marbl) then
         call marbl_logging_add_diagnostics_error(marbl_status_log, sname, subname)
         return
@@ -3905,6 +3929,7 @@ contains
     diags(ind%DOC_prod)%field_3d(:, 1)         = dissolved_organic_matter%DOC_prod(:)
     diags(ind%DOC_remin)%field_3d(:, 1)        = dissolved_organic_matter%DOC_remin(:)
     diags(ind%DOCr_remin)%field_3d(:, 1)       = dissolved_organic_matter%DOCr_remin(:)
+    diags(ind%DOCr_sed_remin)%field_3d(:, 1)       = dissolved_organic_matter%DOCr_sed_remin(:)
     diags(ind%DON_prod)%field_3d(:, 1)         = dissolved_organic_matter%DON_prod(:)
     diags(ind%DON_remin)%field_3d(:, 1)        = dissolved_organic_matter%DON_remin(:)
     diags(ind%DONr_remin)%field_3d(:, 1)       = dissolved_organic_matter%DONr_remin(:)
@@ -4022,7 +4047,7 @@ contains
        write(log_message,"(A,E11.3e3,A,E11.3e3)") &
             'abs(Jint_Ctot)=', abs(diags(ind%Jint_Ctot)%field_2d(1)), &
             ' exceeds Jint_Ctot_thres=', Jint_Ctot_thres
-       call marbl_status_log%log_error(log_message, subname, ElemInd=1)
+       call marbl_status_log%log_noerror(log_message, subname)
        return
     end if
 
@@ -4158,7 +4183,7 @@ contains
        write(log_message,"(A,E11.3e3,A,E11.3e3)") &
             'abs(Jint_Ptot)=', abs(diags(ind%Jint_Ptot)%field_2d(1)), &
             ' exceeds Jint_Ptot_thres=', Jint_Ptot_thres
-       call marbl_status_log%log_error(log_message, subname, ElemInd=1)
+       call marbl_status_log%log_noerror(log_message, subname)
        return
     end if
 
