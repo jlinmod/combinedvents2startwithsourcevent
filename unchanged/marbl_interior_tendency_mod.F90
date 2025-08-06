@@ -3598,7 +3598,7 @@ contains
 
         interior_tendencies(dic_ind,k) = sum(auto_loss_dic(:,k)) + sum(auto_graze_dic(:,k)) - sum(photoC(:,k)) &
                                        + DOC_remin(k) + POC_remin(k) * (c1 - POCremin_refract) + sum(zoo_loss_dic(:,k)) &
-                                       + sum(zoo_graze_dic(:,k)) + P_CaCO3_remin(k) + DOCr_remin(k)
+                                       + sum(zoo_graze_dic(:,k)) + P_CaCO3_remin(k) + DOCr_remin(k) + DOCr_sed_remin(k)
 
         do auto_ind = 1, autotroph_cnt
           if (marbl_tracer_indices%auto_inds(auto_ind)%CaCO3_ind > 0) then
